@@ -8,12 +8,14 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "db:reset": "node scripts/reset-db.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.89.0",
     "@tanstack/react-query-devtools": "^5.89.0",
     "better-sqlite3": "^12.2.0",
+    "csv-parse": "^6.1.0",
     "drizzle-orm": "^0.44.5",
     "next": "15.5.3",
     "react": "19.1.0",

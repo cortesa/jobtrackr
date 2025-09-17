@@ -2,6 +2,7 @@
 
 import { useProjects } from "@/hooks/useProjects"
 
+import { CsvImportButton } from "./CsvImportButton"
 import { ProjectCard } from "./ProjectCard"
 import { ProjectFormCard } from "./ProjectFormCard"
 import styles from "./ProjectOverview.module.scss"
@@ -12,10 +13,13 @@ export function ProjectOverview() {
   return (
     <section className={styles.container}>
       <header className={styles.heading}>
-        <h1 className={styles.title}>Tus proyectos</h1>
-        <p className={styles.subtitle}>
-          Controla tus oportunidades, contactos, pasos y notas en un solo lugar.
-        </p>
+        <div className={styles.headingText}>
+          <h1 className={styles.title}>Tus proyectos</h1>
+          <p className={styles.subtitle}>
+            Controla tus oportunidades, contactos, pasos y notas en un solo lugar.
+          </p>
+        </div>
+        <CsvImportButton />
       </header>
 
       {isLoading ? <StateMessage message="Cargando proyectos..." /> : null}
