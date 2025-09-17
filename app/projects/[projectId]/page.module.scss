@@ -145,13 +145,13 @@
   font-size: 0.9rem;
 }
 
-.skills {
+.techs {
   display: grid;
   gap: 1.25rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-.skills h3 {
+.techs h3 {
   margin: 0 0 0.5rem;
   font-size: 1.05rem;
   color: #1f2937;

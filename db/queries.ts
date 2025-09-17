@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm"
-import { db, companies, contacts, projectContacts, projectNotes, projectSkills, projects, projectSteps, skills } from "./index"
+import { db, companies, contacts, projectContacts, projectNotes, projectTechs, projects, projectSteps, techs } from "./index"
 
 export interface ProjectDetails {
   id: number;
@@ -28,7 +28,7 @@ export interface ProjectDetails {
     role: string | null;
     notes: string | null;
   }>;
-  skills: {
+  techs: {
     required: string[];
     valuable: string[];
   };
@@ -57,7 +57,7 @@ export async function getProjectsWithDetails(): Promise<ProjectDetails[]> {
   if (projectIds.length === 0) {
     return []
   }
-  const [ contactsByProject, skillsByProject, stepsByProject, notesByProject ] = await Promise.all([
+  const [ contactsByProject, techsByProject, stepsByProject, notesByProject ] = await Promise.all([
     db
       .select({
         projectId: projectContacts.projectId,
@@ -68,13 +68,13 @@ export async function getProjectsWithDetails(): Promise<ProjectDetails[]> {
       .where(inArray(projectContacts.projectId, projectIds)),
     db
       .select({
-        projectId: projectSkills.projectId,
-        kind: projectSkills.kind,
-        skill: skills,
+        projectId: projectTechs.projectId,
+        kind: projectTechs.kind,
+        tech: techs,
       })
-      .from(projectSkills)
-      .innerJoin(skills, eq(projectSkills.skillId, skills.id))
-      .where(inArray(projectSkills.projectId, projectIds)),
+      .from(projectTechs)
+      .innerJoin(techs, eq(projectTechs.techId, techs.id))
+      .where(inArray(projectTechs.projectId, projectIds)),
     db
       .select()
       .from(projectSteps)
@@ -96,14 +96,14 @@ export async function getProjectsWithDetails(): Promise<ProjectDetails[]> {
       .filter((entry) => entry.projectId === project.id)
       .map((entry) => entry.contact)
 
-    const skillsForProject = skillsByProject.filter((entry) => entry.projectId === project.id)
-    const requiredSkills = skillsForProject
+    const techsForProject = techsByProject.filter((entry) => entry.projectId === project.id)
+    const requiredTechs = techsForProject
       .filter((entry) => entry.kind === "required")
-      .map((entry) => entry.skill.name)
+      .map((entry) => entry.tech.name)
       .sort((a, b) => a.localeCompare(b))
-    const valuableSkills = skillsForProject
+    const valuableTechs = techsForProject
       .filter((entry) => entry.kind === "valuable")
-      .map((entry) => entry.skill.name)
+      .map((entry) => entry.tech.name)
       .sort((a, b) => a.localeCompare(b))
 
     const stepsForProject = stepsByProject
@@ -151,9 +151,9 @@ export async function getProjectsWithDetails(): Promise<ProjectDetails[]> {
         role: contact.role,
         notes: contact.notes,
       })),
-      skills: {
-        required: requiredSkills,
-        valuable: valuableSkills,
+      techs: {
+        required: requiredTechs,
+        valuable: valuableTechs,
       },
       steps: stepsForProject,
       notes: notesForProject,
@@ -173,7 +173,7 @@ export async function getProjectDetailsById(projectId: number): Promise<ProjectD
   }
   const { project, company } = baseProject[0]
 
-  const [ contactsForProject, skillsForProject, stepsForProject, notesForProject ] = await Promise.all([
+  const [ contactsForProject, techsForProject, stepsForProject, notesForProject ] = await Promise.all([
     db
       .select({
         contact: contacts,
@@ -183,12 +183,12 @@ export async function getProjectDetailsById(projectId: number): Promise<ProjectD
       .where(eq(projectContacts.projectId, projectId)),
     db
       .select({
-        kind: projectSkills.kind,
-        skill: skills,
+        kind: projectTechs.kind,
+        tech: techs,
       })
-      .from(projectSkills)
-      .innerJoin(skills, eq(projectSkills.skillId, skills.id))
-      .where(eq(projectSkills.projectId, projectId)),
+      .from(projectTechs)
+      .innerJoin(techs, eq(projectTechs.techId, techs.id))
+      .where(eq(projectTechs.projectId, projectId)),
     db
       .select()
       .from(projectSteps)
@@ -205,13 +205,13 @@ export async function getProjectDetailsById(projectId: number): Promise<ProjectD
       .orderBy(desc(projectNotes.noteAt), desc(projectNotes.id)),
   ])
 
-  const requiredSkills = skillsForProject
+  const requiredTechs = techsForProject
     .filter((entry) => entry.kind === "required")
-    .map((entry) => entry.skill.name)
+    .map((entry) => entry.tech.name)
     .sort((a, b) => a.localeCompare(b))
-  const valuableSkills = skillsForProject
+  const valuableTechs = techsForProject
     .filter((entry) => entry.kind === "valuable")
-    .map((entry) => entry.skill.name)
+    .map((entry) => entry.tech.name)
     .sort((a, b) => a.localeCompare(b))
 
   const detail: ProjectDetails = {
@@ -241,9 +241,9 @@ export async function getProjectDetailsById(projectId: number): Promise<ProjectD
       role: entry.contact.role,
       notes: entry.contact.notes,
     })),
-    skills: {
-      required: requiredSkills,
-      valuable: valuableSkills,
+    techs: {
+      required: requiredTechs,
+      valuable: valuableTechs,
     },
     steps: stepsForProject.map((entry) => ({
       id: entry.id,
@@ -261,40 +261,40 @@ export async function getProjectDetailsById(projectId: number): Promise<ProjectD
 
   return detail
 }
-interface CreateSkillInput {
+interface CreateTechInput {
   name: string;
 }
 
-export async function findOrCreateSkill({ name }: CreateSkillInput) {
+export async function findOrCreateTech({ name }: CreateTechInput) {
   const trimmedName = name.trim()
   if (!trimmedName) {
-    throw new Error("El nombre de la skill es obligatorio")
+    throw new Error("El nombre de la tecnología es obligatorio")
   }
-  const existingSkill = await db.query.skills.findFirst({
-    where: eq(skills.name, trimmedName),
+  const existingTech = await db.query.techs.findFirst({
+    where: eq(techs.name, trimmedName),
   })
 
-  if (existingSkill) {
-    return existingSkill
+  if (existingTech) {
+    return existingTech
   }
-  const [ inserted ] = await db.insert(skills).values({ name: trimmedName }).returning()
+  const [ inserted ] = await db.insert(techs).values({ name: trimmedName }).returning()
 
   return inserted
 }
-export async function linkSkillToProject({
+export async function linkTechToProject({
   projectId,
-  skillId,
+  techId,
   kind,
 }: {
   projectId: number;
-  skillId: number;
+  techId: number;
   kind: "required" | "valuable";
 }) {
   await db
-    .insert(projectSkills)
-    .values({ projectId, skillId, kind })
+    .insert(projectTechs)
+    .values({ projectId, techId, kind })
     .onConflictDoNothing({
-      target: [ projectSkills.projectId, projectSkills.skillId, projectSkills.kind ],
+      target: [ projectTechs.projectId, projectTechs.techId, projectTechs.kind ],
     })
 }
 export async function projectExists(projectId: number) {

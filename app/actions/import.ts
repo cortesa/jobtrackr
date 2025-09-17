@@ -14,7 +14,7 @@ import {
   projectSteps,
   projects,
 } from "@/db"
-import { findOrCreateSkill, linkSkillToProject } from "@/db/queries"
+import { findOrCreateTech, linkTechToProject } from "@/db/queries"
 import { CSV_HEADERS } from "@/lib/csvTemplate"
 import { PROJECTS_TAG } from "./cache"
 import { failure, success, type ActionResult } from "./types"
@@ -217,11 +217,11 @@ async function persistRows(normalizedRows: NormalizedRow[]) {
       const key = skillName.toLowerCase()
       let skillId = skillCache.get(key)
       if (!skillId) {
-        const skill = await findOrCreateSkill({ name: skillName })
+        const skill = await findOrCreateTech({ name: skillName })
         skillId = skill.id
         skillCache.set(key, skillId)
       }
-      await linkSkillToProject({ projectId, skillId, kind })
+      await linkTechToProject({ projectId, skillId, kind })
     }
     await Promise.all(row.skillsRequired.map((skill) => handleSkill(skill, "required")))
     await Promise.all(row.skillsValuable.map((skill) => handleSkill(skill, "valuable")))

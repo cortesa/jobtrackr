@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="text-gradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#facc15"/>
+      <stop offset="50%" stop-color="#fb7185"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.4)"/>
+    </filter>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg-gradient)"/>
+  <text x="50%" y="52%" font-size="36" font-family="Poppins, Arial, sans-serif"
+        font-weight="bold" text-anchor="middle" dominant-baseline="central"
+        fill="url(#text-gradient)" filter="url(#shadow)">
+    JT
+  </text>
+</svg>

@@ -2,11 +2,11 @@
 
 import { revalidateTag } from "next/cache"
 
-import { findOrCreateSkill, linkSkillToProject, projectExists } from "@/db/queries"
+import { findOrCreateTech, linkTechToProject, projectExists } from "@/db/queries"
 import { PROJECTS_TAG } from "./cache"
 import { failure, success, type ActionResult } from "./types"
 
-interface AddSkillArgs {
+interface AddTechsArgs {
   projectId: number;
   name: string;
   kind: "required" | "valuable";
@@ -16,7 +16,7 @@ export async function addSkill({
   projectId,
   name,
   kind,
-}: AddSkillArgs): Promise<ActionResult<{ skillId: number }>> {
+}: AddTechsArgs): Promise<ActionResult<{ techId: number }>> {
   try {
     if (!name.trim()) {
       return failure("El nombre de la skill es obligatorio")
@@ -28,9 +28,9 @@ export async function addSkill({
     if (!exists) {
       return failure("El proyecto indicado no existe")
     }
-    const skill = await findOrCreateSkill({ name })
+    const skill = await findOrCreateTech({ name })
 
-    await linkSkillToProject({ projectId, skillId: skill.id, kind })
+    await linkTechToProject({ projectId, techId: skill.id, kind })
 
     revalidateTag(PROJECTS_TAG)
 

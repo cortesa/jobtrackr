@@ -11,7 +11,7 @@ import {
   projectSteps,
   projects,
 } from "@/db"
-import { findOrCreateSkill, linkSkillToProject } from "@/db/queries"
+import { findOrCreateTech, linkTechToProject } from "@/db/queries"
 import { PROJECTS_TAG } from "./cache"
 import { failure, success, type ActionResult } from "./types"
 
@@ -158,12 +158,12 @@ export async function createProjectBundle(
       const valuableSkills = sanitizeSkills(input.skillsValuable)
 
       for (const skillName of requiredSkills) {
-        const skill = await findOrCreateSkill({ name: skillName })
-        await linkSkillToProject({ projectId: project.id, skillId: skill.id, kind: "required" })
+        const skill = await findOrCreateTech({ name: skillName })
+        await linkTechToProject({ projectId: project.id, skillId: skill.id, kind: "required" })
       }
       for (const skillName of valuableSkills) {
-        const skill = await findOrCreateSkill({ name: skillName })
-        await linkSkillToProject({ projectId: project.id, skillId: skill.id, kind: "valuable" })
+        const skill = await findOrCreateTech({ name: skillName })
+        await linkTechToProject({ projectId: project.id, skillId: skill.id, kind: "valuable" })
       }
       if (input.step?.title && input.step.stepAt) {
         await tx.insert(projectSteps).values({

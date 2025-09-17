@@ -94,31 +94,31 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         )}
       </section>
 
-      <section className={styles.section} aria-labelledby="project-skills">
-        <h2 id="project-skills">Stack</h2>
-        <div className={styles.skills}>
+      <section className={styles.section} aria-labelledby="project-techs">
+        <h2 id="project-techs">Stack</h2>
+        <div className={styles.tech}>
           <div>
             <h3>Imprescindibles</h3>
-            {project.skills.required.length ? (
+            {project.techs.required.length ? (
               <ul className={styles.pills}>
-                {project.skills.required.map((skill) => (
-                  <li key={`required-${skill}`}>{skill}</li>
+                {project.techs.required.map((tech) => (
+                  <li key={`required-${tech}`}>{tech}</li>
                 ))}
               </ul>
             ) : (
-              <p className={styles.empty}>Sin skills imprescindibles.</p>
+              <p className={styles.empty}>Sin techs imprescindibles.</p>
             )}
           </div>
           <div>
             <h3>Valorables</h3>
-            {project.skills.valuable.length ? (
+            {project.techs.valuable.length ? (
               <ul className={styles.pills}>
-                {project.skills.valuable.map((skill) => (
-                  <li key={`valuable-${skill}`}>{skill}</li>
+                {project.techs.valuable.map((tech) => (
+                  <li key={`valuable-${tech}`}>{tech}</li>
                 ))}
               </ul>
             ) : (
-              <p className={styles.empty}>Sin skills valorables.</p>
+              <p className={styles.empty}>Sin techs valorables.</p>
             )}
           </div>
         </div>
