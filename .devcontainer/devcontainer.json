@@ -1,0 +1,58 @@
+{
+  "name": "Jobtrackr Node.js & TypeScript",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "runArgs": [
+    "--name=jobtrackr",
+    "--rm"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "waderyan.gitblame",
+        "dbaeumer.vscode-eslint",
+        "openai.chatgpt"
+      ],
+      "settings": {
+        "workbench.editor.tabCloseButton": "left",
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "always"
+        },
+        "eslint.validate": [
+          "javascript",
+          "javascriptreact",
+          "typescript",
+          "typescriptreact"
+        ],
+        "eslint.format.enable": true,
+        "eslint.experimental.useFlatConfig": true,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false,
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "files.trimTrailingWhitespace": true,
+        "editor.formatOnSave": true,
+        "workbench.experimental.sidePanel.enabled": true,
+        "workbench.startupEditor": "none",
+        "window.restoreWindows": "all",
+        "workbench.colorCustomizations": {
+          "titleBar.activeBackground": "#0D1B2A",
+          "titleBar.border": "#1B263B",
+          "titleBar.activeForeground": "#E0E1DD",
+          "titleBar.inactiveBackground": "#0D1B2A",
+          "titleBar.inactiveForeground": "#778DA9",
+          "activityBar.background": "#1B263B",
+          "activityBar.foreground": "#E0E1DD",
+          "activityBar.inactiveForeground": "#AFC3DC",
+          "activityBar.activeBorder": "#415A77",
+          "tab.activeBorderTop": "#415A77",
+          "tab.activeBackground": "#0B1622",
+          "tab.inactiveBackground": "#09111A",
+          "tab.activeForeground": "#E0E1DD",
+          "tab.inactiveForeground": "#9EAEC0"
+        }
+      }
+    }
+  }
+}
