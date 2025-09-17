@@ -159,9 +159,9 @@ export function ProjectFormCard() {
   return (
     <form className={styles.card} aria-labelledby="project-form-card-title" onSubmit={handleSubmit}>
       <header className={styles.header}>
-        <h2 id="project-form-card-title">Añade un nuevo proyecto</h2>
+        <h2 id="project-form-card-title">Añade una posición</h2>
         <p className={styles.helperText}>
-          Completa los datos clave y guarda el proyecto en tu base.
+          Completa los datos clave y guarda para su seguimiento.
         </p>
       </header>
 

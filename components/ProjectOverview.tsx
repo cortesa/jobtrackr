@@ -14,7 +14,8 @@ export function ProjectOverview() {
     <section className={styles.container}>
       <header className={styles.heading}>
         <div className={styles.headingText}>
-          <h1 className={styles.title}>Tus proyectos</h1>
+          <h1 className={styles.title}>Tus posiciones
+          </h1>
           <p className={styles.subtitle}>
             Controla tus oportunidades, contactos, pasos y notas en un solo lugar.
           </p>
