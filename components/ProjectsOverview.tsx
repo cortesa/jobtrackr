@@ -1,27 +1,40 @@
 "use client"
 
+import { useState } from "react"
+
 import { useProjects } from "@/hooks/useProjects"
 
 import { CsvImportButton } from "./CsvImportButton"
-import { ProjectCard } from "./ProjectCard"
+import { ProjectListCard } from "./ProjectListCard"
 import { ProjectFormCard } from "./ProjectFormCard"
-import styles from "./ProjectOverview.module.scss"
+import styles from "./ProjectsOverview.module.scss"
 
-export function ProjectOverview() {
+export function ProjectsOverview() {
   const { data, isLoading, isError, error } = useProjects()
+  const [ showForm, setShowForm ] = useState(false)
 
   return (
     <section className={styles.container}>
       <header className={styles.heading}>
         <div className={styles.headingText}>
-          <h1 className={styles.title}>Tus posiciones
-          </h1>
+          <h1 className={styles.title}>Tus posiciones</h1>
           <p className={styles.subtitle}>
             Controla tus oportunidades, contactos, pasos y notas en un solo lugar.
           </p>
         </div>
-        <CsvImportButton />
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className={styles.addButton}
+            onClick={() => setShowForm((previous) => !previous)}
+          >
+            {showForm ? "Cerrar formulario" : "Añadir proyecto"}
+          </button>
+          <CsvImportButton />
+        </div>
       </header>
+
+      {showForm ? <ProjectFormCard /> : null}
 
       {isLoading ? <StateMessage message="Cargando proyectos..." /> : null}
       {isError ? <StateMessage message={error?.message ?? "Ha ocurrido un error."} /> : null}
@@ -30,7 +43,7 @@ export function ProjectOverview() {
         data && data.length ? (
           <div className={styles.grid}>
             {data.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectListCard key={project.id} project={project} />
             ))}
           </div>
         ) : (

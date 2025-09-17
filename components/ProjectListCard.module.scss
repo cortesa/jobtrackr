@@ -1,0 +1,38 @@
+.card {
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 16px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #ffffff;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  transform: translateY(-2px);
+}
+
+.company {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #475467;
+}
+
+.project {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.salary {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #047857;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}

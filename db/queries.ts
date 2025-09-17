@@ -160,6 +160,107 @@ export async function getProjectsWithDetails(): Promise<ProjectDetails[]> {
     } satisfies ProjectDetails
   })
 }
+export async function getProjectDetailsById(projectId: number): Promise<ProjectDetails | null> {
+  const baseProject = await db
+    .select()
+    .from(projects)
+    .leftJoin(companies, eq(projects.companyId, companies.id))
+    .where(eq(projects.id, projectId))
+    .limit(1)
+
+  if (!baseProject.length) {
+    return null
+  }
+  const { project, company } = baseProject[0]
+
+  const [ contactsForProject, skillsForProject, stepsForProject, notesForProject ] = await Promise.all([
+    db
+      .select({
+        contact: contacts,
+      })
+      .from(projectContacts)
+      .innerJoin(contacts, eq(projectContacts.contactId, contacts.id))
+      .where(eq(projectContacts.projectId, projectId)),
+    db
+      .select({
+        kind: projectSkills.kind,
+        skill: skills,
+      })
+      .from(projectSkills)
+      .innerJoin(skills, eq(projectSkills.skillId, skills.id))
+      .where(eq(projectSkills.projectId, projectId)),
+    db
+      .select()
+      .from(projectSteps)
+      .where(eq(projectSteps.projectId, projectId))
+      .orderBy(
+        asc(projectSteps.sortOrder),
+        asc(projectSteps.stepAt),
+        asc(projectSteps.id),
+      ),
+    db
+      .select()
+      .from(projectNotes)
+      .where(eq(projectNotes.projectId, projectId))
+      .orderBy(desc(projectNotes.noteAt), desc(projectNotes.id)),
+  ])
+
+  const requiredSkills = skillsForProject
+    .filter((entry) => entry.kind === "required")
+    .map((entry) => entry.skill.name)
+    .sort((a, b) => a.localeCompare(b))
+  const valuableSkills = skillsForProject
+    .filter((entry) => entry.kind === "valuable")
+    .map((entry) => entry.skill.name)
+    .sort((a, b) => a.localeCompare(b))
+
+  const detail: ProjectDetails = {
+    id: project.id,
+    name: project.name,
+    status: project.status,
+    firstContactAt: project.firstContactAt,
+    salary: {
+      min: project.salaryMin,
+      max: project.salaryMax,
+      currency: project.salaryCurrency,
+      period: project.salaryPeriod,
+      raw: project.salaryRaw,
+    },
+    createdAt: project.createdAt,
+    updatedAt: project.updatedAt,
+    company: {
+      id: company?.id ?? project.companyId,
+      name: company?.name ?? "Empresa sin nombre",
+      website: company?.website ?? null,
+    },
+    contacts: contactsForProject.map((entry) => ({
+      id: entry.contact.id,
+      name: entry.contact.name,
+      email: entry.contact.email,
+      phone: entry.contact.phone,
+      role: entry.contact.role,
+      notes: entry.contact.notes,
+    })),
+    skills: {
+      required: requiredSkills,
+      valuable: valuableSkills,
+    },
+    steps: stepsForProject.map((entry) => ({
+      id: entry.id,
+      title: entry.title,
+      comment: entry.comment,
+      stepAt: entry.stepAt,
+      sortOrder: entry.sortOrder,
+    })),
+    notes: notesForProject.map((entry) => ({
+      id: entry.id,
+      content: entry.content,
+      noteAt: entry.noteAt,
+    })),
+  }
+
+  return detail
+}
 interface CreateSkillInput {
   name: string;
 }
