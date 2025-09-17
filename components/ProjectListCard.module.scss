@@ -7,6 +7,8 @@
   gap: 0.5rem;
   background: #ffffff;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
+  text-decoration: none;
+  color: inherit;
 }
 
 .card:hover {
@@ -30,9 +32,4 @@
   font-size: 0.95rem;
   font-weight: 600;
   color: #047857;
-}
-
-a {
-  text-decoration: none;
-  color: inherit;
 }
