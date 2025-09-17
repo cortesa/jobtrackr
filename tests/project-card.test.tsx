@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react"
 
-import { ProjectCard } from "@/components/ProjectCard";
-import type { ProjectDetails } from "@/db/queries";
+import { ProjectCard } from "@/components/ProjectCard"
+import type { ProjectDetails } from "@/db/queries"
 
 const sampleProject: ProjectDetails = {
   id: 1,
@@ -33,8 +33,8 @@ const sampleProject: ProjectDetails = {
     },
   ],
   skills: {
-    required: ["React", "TypeScript"],
-    valuable: ["Storybook"],
+    required: [ "React", "TypeScript" ],
+    valuable: [ "Storybook" ],
   },
   steps: [
     {
@@ -52,17 +52,17 @@ const sampleProject: ProjectDetails = {
       noteAt: Date.UTC(2024, 5, 15),
     },
   ],
-};
+}
 
 describe("ProjectCard", () => {
   it("muestra los datos principales del proyecto", () => {
-    render(<ProjectCard project={sampleProject} />);
+    render(<ProjectCard project={sampleProject} />)
 
-    expect(screen.getByText(/Tech Corp/)).toBeInTheDocument();
-    expect(screen.getByText(/Frontend React/)).toBeInTheDocument();
-    expect(screen.getByText(/40k-48k € bruto\/año/)).toBeInTheDocument();
-    expect(screen.getByText(/Ana García/)).toBeInTheDocument();
-    expect(screen.getByText(/Entrevista técnica/)).toBeInTheDocument();
-    expect(screen.getByText(/Storybook/)).toBeInTheDocument();
-  });
-});
+    expect(screen.getByText(/Tech Corp/)).toBeInTheDocument()
+    expect(screen.getByText(/Frontend React/)).toBeInTheDocument()
+    expect(screen.getByText(/40k-48k € bruto\/año/)).toBeInTheDocument()
+    expect(screen.getByText(/Ana García/)).toBeInTheDocument()
+    expect(screen.getByText(/Entrevista técnica/)).toBeInTheDocument()
+    expect(screen.getByText(/Storybook/)).toBeInTheDocument()
+  })
+})

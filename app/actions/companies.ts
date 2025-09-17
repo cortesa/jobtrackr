@@ -1,10 +1,10 @@
-"use server";
+"use server"
 
-import { revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache"
 
-import { db, companies } from "@/db";
-import { PROJECTS_TAG } from "./cache";
-import { failure, success, type ActionResult } from "./types";
+import { db, companies } from "@/db"
+import { PROJECTS_TAG } from "./cache"
+import { failure, success, type ActionResult } from "./types"
 
 interface CreateCompanyArgs {
   name: string;
@@ -16,20 +16,21 @@ export async function createCompany({
   website,
 }: CreateCompanyArgs): Promise<ActionResult<{ id: number }>> {
   try {
-    const trimmedName = name.trim();
+    const trimmedName = name.trim()
     if (!trimmedName) {
-      return failure("El nombre de la empresa es obligatorio");
+      return failure("El nombre de la empresa es obligatorio")
     }
-
-    const [company] = await db
+    const [ company ] = await db
       .insert(companies)
       .values({ name: trimmedName, website: website?.trim() || null })
-      .returning({ id: companies.id });
+      .returning({ id: companies.id })
 
-    revalidateTag(PROJECTS_TAG);
-    return success({ id: company.id });
+    revalidateTag(PROJECTS_TAG)
+
+    return success({ id: company.id })
   } catch (error) {
-    console.error("createCompany", error);
-    return failure("No se pudo crear la empresa");
+    console.error("createCompany", error)
+
+    return failure("No se pudo crear la empresa")
   }
 }

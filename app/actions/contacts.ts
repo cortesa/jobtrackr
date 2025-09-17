@@ -1,10 +1,10 @@
-"use server";
+"use server"
 
-import { revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache"
 
-import { db, contacts } from "@/db";
-import { PROJECTS_TAG } from "./cache";
-import { failure, success, type ActionResult } from "./types";
+import { db, contacts } from "@/db"
+import { PROJECTS_TAG } from "./cache"
+import { failure, success, type ActionResult } from "./types"
 
 interface CreateContactArgs {
   companyId: number;
@@ -27,18 +27,16 @@ export async function createContact({
     const company = await db.query.companies.findFirst({
       columns: { id: true },
       where: (table, { eq }) => eq(table.id, companyId),
-    });
+    })
 
     if (!company) {
-      return failure("La empresa indicada no existe");
+      return failure("La empresa indicada no existe")
     }
-
-    const trimmedName = name.trim();
+    const trimmedName = name.trim()
     if (!trimmedName) {
-      return failure("El nombre del contacto es obligatorio");
+      return failure("El nombre del contacto es obligatorio")
     }
-
-    const [contact] = await db
+    const [ contact ] = await db
       .insert(contacts)
       .values({
         companyId,
@@ -48,12 +46,14 @@ export async function createContact({
         role: role?.trim() || null,
         notes: notes?.trim() || null,
       })
-      .returning({ id: contacts.id });
+      .returning({ id: contacts.id })
 
-    revalidateTag(PROJECTS_TAG);
-    return success({ id: contact.id });
+    revalidateTag(PROJECTS_TAG)
+
+    return success({ id: contact.id })
   } catch (error) {
-    console.error("createContact", error);
-    return failure("No se pudo crear el contacto");
+    console.error("createContact", error)
+
+    return failure("No se pudo crear el contacto")
   }
 }

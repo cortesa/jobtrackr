@@ -1,14 +1,14 @@
-import { sql } from "drizzle-orm";
-import { relations } from "drizzle-orm";
+import { sql } from "drizzle-orm"
+import { relations } from "drizzle-orm"
 import {
   check,
   integer,
   primaryKey,
   sqliteTable,
   text,
-} from "drizzle-orm/sqlite-core";
+} from "drizzle-orm/sqlite-core"
 
-const timestampNow = sql`(unixepoch() * 1000)`;
+const timestampNow = sql`(unixepoch() * 1000)`
 
 export const companies = sqliteTable("company", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -17,7 +17,7 @@ export const companies = sqliteTable("company", {
   createdAt: integer("created_at", { mode: "number" })
     .notNull()
     .default(timestampNow),
-});
+})
 
 export const contacts = sqliteTable("contact", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -32,7 +32,7 @@ export const contacts = sqliteTable("contact", {
   createdAt: integer("created_at", { mode: "number" })
     .notNull()
     .default(timestampNow),
-});
+})
 
 export const projects = sqliteTable("project", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -53,7 +53,7 @@ export const projects = sqliteTable("project", {
   updatedAt: integer("updated_at", { mode: "number" })
     .notNull()
     .default(timestampNow),
-});
+})
 
 export const projectContacts = sqliteTable(
   "project_contact",
@@ -67,14 +67,14 @@ export const projectContacts = sqliteTable(
     relRole: text("rel_role"),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.projectId, table.contactId] }),
+    pk: primaryKey({ columns: [ table.projectId, table.contactId ] }),
   }),
-);
+)
 
 export const skills = sqliteTable("skill", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull().unique(),
-});
+})
 
 export const projectSkills = sqliteTable(
   "project_skill",
@@ -88,13 +88,13 @@ export const projectSkills = sqliteTable(
     kind: text("kind").notNull(),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.projectId, table.skillId, table.kind] }),
+    pk: primaryKey({ columns: [ table.projectId, table.skillId, table.kind ] }),
     kindCheck: check(
       "project_skill_kind_check",
       sql`${table.kind} in ('required', 'valuable')`,
     ),
   }),
-);
+)
 
 export const projectSteps = sqliteTable("project_step", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -108,7 +108,7 @@ export const projectSteps = sqliteTable("project_step", {
   createdAt: integer("created_at", { mode: "number" })
     .notNull()
     .default(timestampNow),
-});
+})
 
 export const projectNotes = sqliteTable("project_note", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -117,67 +117,67 @@ export const projectNotes = sqliteTable("project_note", {
     .references(() => projects.id, { onDelete: "cascade" }),
   noteAt: integer("note_at", { mode: "number" }).notNull(),
   content: text("content").notNull(),
-});
+})
 
 export const companiesRelations = relations(companies, ({ many }) => ({
   contacts: many(contacts),
   projects: many(projects),
-}));
+}))
 
 export const contactsRelations = relations(contacts, ({ one, many }) => ({
   company: one(companies, {
-    fields: [contacts.companyId],
-    references: [companies.id],
+    fields: [ contacts.companyId ],
+    references: [ companies.id ],
   }),
   projectLinks: many(projectContacts),
-}));
+}))
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
   company: one(companies, {
-    fields: [projects.companyId],
-    references: [companies.id],
+    fields: [ projects.companyId ],
+    references: [ companies.id ],
   }),
   projectContacts: many(projectContacts),
   projectSkills: many(projectSkills),
   steps: many(projectSteps),
   notes: many(projectNotes),
-}));
+}))
 
 export const projectContactsRelations = relations(
   projectContacts,
   ({ one }) => ({
     project: one(projects, {
-      fields: [projectContacts.projectId],
-      references: [projects.id],
+      fields: [ projectContacts.projectId ],
+      references: [ projects.id ],
     }),
     contact: one(contacts, {
-      fields: [projectContacts.contactId],
-      references: [contacts.id],
+      fields: [ projectContacts.contactId ],
+      references: [ contacts.id ],
     }),
   }),
-);
+)
 
 export const projectSkillsRelations = relations(projectSkills, ({ one }) => ({
   project: one(projects, {
-    fields: [projectSkills.projectId],
-    references: [projects.id],
+    fields: [ projectSkills.projectId ],
+    references: [ projects.id ],
   }),
   skill: one(skills, {
-    fields: [projectSkills.skillId],
-    references: [skills.id],
+    fields: [ projectSkills.skillId ],
+    references: [ skills.id ],
   }),
-}));
+}))
 
 export const projectStepsRelations = relations(projectSteps, ({ one }) => ({
   project: one(projects, {
-    fields: [projectSteps.projectId],
-    references: [projects.id],
+    fields: [ projectSteps.projectId ],
+    references: [ projects.id ],
   }),
-}));
+}))
 
 export const projectNotesRelations = relations(projectNotes, ({ one }) => ({
   project: one(projects, {
-    fields: [projectNotes.projectId],
-    references: [projects.id],
+    fields: [ projectNotes.projectId ],
+    references: [ projects.id ],
   }),
-}));
+}))

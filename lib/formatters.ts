@@ -2,12 +2,11 @@ const DATE_OPTIONS: Intl.DateTimeFormatOptions = {
   year: "numeric",
   month: "short",
   day: "numeric",
-};
-
-export function formatDate(epochMs: number): string {
-  return new Intl.DateTimeFormat("es-ES", DATE_OPTIONS).format(new Date(epochMs));
 }
 
+export function formatDate(epochMs: number): string {
+  return new Intl.DateTimeFormat("es-ES", DATE_OPTIONS).format(new Date(epochMs))
+}
 export function formatCurrencyRange({
   min,
   max,
@@ -20,23 +19,21 @@ export function formatCurrencyRange({
   period?: string | null;
 }): string | null {
   if (min == null && max == null) {
-    return null;
+    return null
   }
-
   const formatter = new Intl.NumberFormat("es-ES", {
     style: "currency",
     currency: currency ?? "EUR",
     maximumFractionDigits: 0,
-  });
+  })
 
   if (min != null && max != null) {
-    return `${formatter.format(min)} - ${formatter.format(max)} / ${period ?? "year"}`;
+    return `${formatter.format(min)} - ${formatter.format(max)} / ${period ?? "year"}`
   }
-
-  const value = min ?? max;
+  const value = min ?? max
   if (value == null) {
-    return null;
+    return null
   }
 
-  return `${formatter.format(value)} / ${period ?? "year"}`;
+  return `${formatter.format(value)} / ${period ?? "year"}`
 }

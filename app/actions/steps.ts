@@ -1,11 +1,11 @@
-"use server";
+"use server"
 
-import { revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache"
 
-import { db, projectSteps, projects } from "@/db";
-import { projectExists } from "@/db/queries";
-import { PROJECTS_TAG } from "./cache";
-import { failure, success, type ActionResult } from "./types";
+import { db, projectSteps, projects } from "@/db"
+import { projectExists } from "@/db/queries"
+import { PROJECTS_TAG } from "./cache"
+import { failure, success, type ActionResult } from "./types"
 
 interface AddStepArgs {
   projectId: number;
@@ -24,21 +24,18 @@ export async function addStep({
 }: AddStepArgs): Promise<ActionResult<{ id: number }>> {
   try {
     if (!title.trim()) {
-      return failure("El título del paso es obligatorio");
+      return failure("El título del paso es obligatorio")
     }
-
     if (!Number.isFinite(stepAt)) {
-      return failure("La fecha del paso es obligatoria");
+      return failure("La fecha del paso es obligatoria")
     }
-
-    const exists = await projectExists(projectId);
+    const exists = await projectExists(projectId)
     if (!exists) {
-      return failure("El proyecto indicado no existe");
+      return failure("El proyecto indicado no existe")
     }
+    const now = Date.now()
 
-    const now = Date.now();
-
-    const [step] = await db
+    const [ step ] = await db
       .insert(projectSteps)
       .values({
         projectId,
@@ -48,17 +45,19 @@ export async function addStep({
         sortOrder: sortOrder ?? null,
         createdAt: now,
       })
-      .returning({ id: projectSteps.id });
+      .returning({ id: projectSteps.id })
 
     await db
       .update(projects)
       .set({ updatedAt: now })
-      .where((table, { eq }) => eq(table.id, projectId));
+      .where((table, { eq }) => eq(table.id, projectId))
 
-    revalidateTag(PROJECTS_TAG);
-    return success({ id: step.id });
+    revalidateTag(PROJECTS_TAG)
+
+    return success({ id: step.id })
   } catch (error) {
-    console.error("addStep", error);
-    return failure("No se pudo añadir el paso");
+    console.error("addStep", error)
+
+    return failure("No se pudo añadir el paso")
   }
 }

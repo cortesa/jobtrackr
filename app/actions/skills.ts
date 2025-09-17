@@ -1,10 +1,10 @@
-"use server";
+"use server"
 
-import { revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache"
 
-import { findOrCreateSkill, linkSkillToProject, projectExists } from "@/db/queries";
-import { PROJECTS_TAG } from "./cache";
-import { failure, success, type ActionResult } from "./types";
+import { findOrCreateSkill, linkSkillToProject, projectExists } from "@/db/queries"
+import { PROJECTS_TAG } from "./cache"
+import { failure, success, type ActionResult } from "./types"
 
 interface AddSkillArgs {
   projectId: number;
@@ -19,29 +19,28 @@ export async function addSkill({
 }: AddSkillArgs): Promise<ActionResult<{ skillId: number }>> {
   try {
     if (!name.trim()) {
-      return failure("El nombre de la skill es obligatorio");
+      return failure("El nombre de la skill es obligatorio")
     }
-
-    if (!["required", "valuable"].includes(kind)) {
-      return failure("El tipo de skill no es válido");
+    if (![ "required", "valuable" ].includes(kind)) {
+      return failure("El tipo de skill no es válido")
     }
-
-    const exists = await projectExists(projectId);
+    const exists = await projectExists(projectId)
     if (!exists) {
-      return failure("El proyecto indicado no existe");
+      return failure("El proyecto indicado no existe")
     }
+    const skill = await findOrCreateSkill({ name })
 
-    const skill = await findOrCreateSkill({ name });
+    await linkSkillToProject({ projectId, skillId: skill.id, kind })
 
-    await linkSkillToProject({ projectId, skillId: skill.id, kind });
+    revalidateTag(PROJECTS_TAG)
 
-    revalidateTag(PROJECTS_TAG);
-    return success({ skillId: skill.id });
+    return success({ skillId: skill.id })
   } catch (error) {
-    console.error("addSkill", error);
+    console.error("addSkill", error)
     if (error instanceof Error && /check constraint/i.test(error.message)) {
-      return failure("El tipo de skill debe ser 'required' o 'valuable'");
+      return failure("El tipo de skill debe ser 'required' o 'valuable'")
     }
-    return failure("No se pudo añadir la skill");
+
+    return failure("No se pudo añadir la skill")
   }
 }

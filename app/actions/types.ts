@@ -3,9 +3,8 @@ export type ActionResult<T> =
   | { ok: false; error: string; data?: undefined };
 
 export function success<T>(data: T): ActionResult<T> {
-  return { ok: true, data };
+  return { ok: true, data }
 }
-
 export function failure(message: string): ActionResult<never> {
-  return { ok: false, error: message };
+  return { ok: false, error: message }
 }

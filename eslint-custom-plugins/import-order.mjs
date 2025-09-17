@@ -1,4 +1,4 @@
-export default {
+const importOrderPlugin = {
   rules: {
     "style-imports-last": {
       meta: { type: "layout", fixable: "code", messages: { arrange: "Style imports must be last with a blank line separator." } },
@@ -22,7 +22,7 @@ export default {
             for (const imp of imports) (isStyleImport(imp) ? style : nonStyle).push(imp)
             if (style.length === 0) return
             const firstStyleIndex = imports.findIndex(n => isStyleImport(n))
-            const lastNonStyleIndex = (() => { let i = -1; for (let k = 0; k < imports.length; k++) if (!isStyleImport(imports[k])) i = k;
+            const lastNonStyleIndex = (() => { let i = -1; for (let k = 0; k < imports.length; k++) if (!isStyleImport(imports[k])) i = k
 
               return i })()
             if (firstStyleIndex === -1) return
@@ -198,3 +198,5 @@ export default {
     }
   }
 }
+
+export default importOrderPlugin

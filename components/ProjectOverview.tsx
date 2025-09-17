@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { useProjects } from "@/hooks/useProjects";
+import { useProjects } from "@/hooks/useProjects"
 
-import { ProjectCard } from "./ProjectCard";
-import styles from "./ProjectOverview.module.scss";
+import { ProjectCard } from "./ProjectCard"
+import styles from "./ProjectOverview.module.scss"
 
 export function ProjectOverview() {
-  const { data, isLoading, isError, error } = useProjects();
+  const { data, isLoading, isError, error } = useProjects()
 
   return (
     <section className={styles.container}>
@@ -32,9 +32,8 @@ export function ProjectOverview() {
         )
       ) : null}
     </section>
-  );
+  )
 }
-
 function StateMessage({ message }: { message: string }) {
-  return <div className={styles.state}>{message}</div>;
+  return <div className={styles.state}>{message}</div>
 }

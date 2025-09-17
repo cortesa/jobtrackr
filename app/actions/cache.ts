@@ -1,1 +1,1 @@
-export const PROJECTS_TAG = "projects";
+export const PROJECTS_TAG = "projects"

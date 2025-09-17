@@ -1,22 +1,24 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.scss";
-import { ReactQueryProvider } from "@/components/ReactQueryProvider";
+import type { Metadata } from "next"
+import { Geist, Geist_Mono } from "next/font/google"
+
+import { ReactQueryProvider } from "@/components/ReactQueryProvider"
+
+import "./globals.scss"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+  subsets: [ "latin" ],
+})
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+  subsets: [ "latin" ],
+})
 
 export const metadata: Metadata = {
   title: "Jobtrackr",
   description: "Seguimiento de procesos de selección y proyectos laborales",
-};
+}
 
 export default function RootLayout({
   children,
@@ -29,5 +31,5 @@ export default function RootLayout({
         <ReactQueryProvider>{children}</ReactQueryProvider>
       </body>
     </html>
-  );
+  )
 }

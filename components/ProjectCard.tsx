@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import Link from "next/link";
+import Link from "next/link"
 
-import type { ProjectDetails } from "@/db/queries";
-import { formatCurrencyRange, formatDate } from "@/lib/formatters";
+import type { ProjectDetails } from "@/db/queries"
+import { formatCurrencyRange, formatDate } from "@/lib/formatters"
 
-import styles from "./ProjectCard.module.scss";
+import styles from "./ProjectCard.module.scss"
 
 interface ProjectCardProps {
   project: ProjectDetails;
@@ -17,7 +17,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
     max: project.salary.max ?? undefined,
     currency: project.salary.currency,
     period: project.salary.period,
-  });
+  })
 
   return (
     <article className={styles.card}>
@@ -117,5 +117,5 @@ export function ProjectCard({ project }: ProjectCardProps) {
         )}
       </section>
     </article>
-  );
+  )
 }
