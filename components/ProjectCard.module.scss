@@ -1,0 +1,127 @@
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #d6d9df;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.companyName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0d1b2a;
+}
+
+.projectName {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.sectionTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f2933;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.contacts,
+.skills,
+.steps,
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.contactItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: #f1f5f9;
+}
+
+.skillGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.skillPillGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skillPill {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: #e0ecff;
+  color: #1d4ed8;
+}
+
+.skillPillValuable {
+  background: #fce7f3;
+  color: #be185d;
+}
+
+.timelineItem {
+  border-left: 3px solid #2563eb;
+  padding-left: 1rem;
+  margin-left: 0.5rem;
+}
+
+.itemDate {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #2563eb;
+}
+
+.itemTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+.itemComment {
+  font-size: 0.95rem;
+  color: #4b5563;
+}
+
+.noteItem {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.empty {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-style: italic;
+}

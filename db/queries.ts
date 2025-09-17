@@ -1,0 +1,226 @@
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { db, companies, contacts, projectContacts, projectNotes, projectSkills, projects, projectSteps, skills } from "./index";
+
+export interface ProjectDetails {
+  id: number;
+  name: string;
+  status: string | null;
+  firstContactAt: number;
+  salary: {
+    min?: number | null;
+    max?: number | null;
+    currency: string | null;
+    period: string | null;
+    raw?: string | null;
+  };
+  createdAt: number;
+  updatedAt: number;
+  company: {
+    id: number;
+    name: string;
+    website: string | null;
+  };
+  contacts: Array<{
+    id: number;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    role: string | null;
+    notes: string | null;
+  }>;
+  skills: {
+    required: string[];
+    valuable: string[];
+  };
+  steps: Array<{
+    id: number;
+    title: string;
+    comment: string | null;
+    stepAt: number;
+    sortOrder: number | null;
+  }>;
+  notes: Array<{
+    id: number;
+    content: string;
+    noteAt: number;
+  }>;
+}
+
+export async function getProjectsWithDetails(): Promise<ProjectDetails[]> {
+  const baseProjects = await db
+    .select()
+    .from(projects)
+    .leftJoin(companies, eq(projects.companyId, companies.id))
+    .orderBy(desc(projects.createdAt));
+
+  const projectIds = baseProjects.map((entry) => entry.project.id);
+  if (projectIds.length === 0) {
+    return [];
+  }
+
+  const [contactsByProject, skillsByProject, stepsByProject, notesByProject] = await Promise.all([
+    db
+      .select({
+        projectId: projectContacts.projectId,
+        contact: contacts,
+      })
+      .from(projectContacts)
+      .innerJoin(contacts, eq(projectContacts.contactId, contacts.id))
+      .where(inArray(projectContacts.projectId, projectIds)),
+    db
+      .select({
+        projectId: projectSkills.projectId,
+        kind: projectSkills.kind,
+        skill: skills,
+      })
+      .from(projectSkills)
+      .innerJoin(skills, eq(projectSkills.skillId, skills.id))
+      .where(inArray(projectSkills.projectId, projectIds)),
+    db
+      .select()
+      .from(projectSteps)
+      .where(inArray(projectSteps.projectId, projectIds))
+      .orderBy(
+        asc(projectSteps.sortOrder),
+        asc(projectSteps.stepAt),
+        asc(projectSteps.id),
+      ),
+    db
+      .select()
+      .from(projectNotes)
+      .where(inArray(projectNotes.projectId, projectIds))
+      .orderBy(desc(projectNotes.noteAt), desc(projectNotes.id)),
+  ]);
+
+  return baseProjects.map(({ project, company }) => {
+    const contactsForProject = contactsByProject
+      .filter((entry) => entry.projectId === project.id)
+      .map((entry) => entry.contact);
+
+    const skillsForProject = skillsByProject.filter((entry) => entry.projectId === project.id);
+    const requiredSkills = skillsForProject
+      .filter((entry) => entry.kind === "required")
+      .map((entry) => entry.skill.name)
+      .sort((a, b) => a.localeCompare(b));
+    const valuableSkills = skillsForProject
+      .filter((entry) => entry.kind === "valuable")
+      .map((entry) => entry.skill.name)
+      .sort((a, b) => a.localeCompare(b));
+
+    const stepsForProject = stepsByProject
+      .filter((entry) => entry.projectId === project.id)
+      .map((entry) => ({
+        id: entry.id,
+        title: entry.title,
+        comment: entry.comment,
+        stepAt: entry.stepAt,
+        sortOrder: entry.sortOrder,
+      }));
+
+    const notesForProject = notesByProject
+      .filter((entry) => entry.projectId === project.id)
+      .map((entry) => ({
+        id: entry.id,
+        content: entry.content,
+        noteAt: entry.noteAt,
+      }));
+
+    return {
+      id: project.id,
+      name: project.name,
+      status: project.status,
+      firstContactAt: project.firstContactAt,
+      salary: {
+        min: project.salaryMin,
+        max: project.salaryMax,
+        currency: project.salaryCurrency,
+        period: project.salaryPeriod,
+        raw: project.salaryRaw,
+      },
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      company: {
+        id: company?.id ?? project.companyId,
+        name: company?.name ?? "Empresa sin nombre",
+        website: company?.website ?? null,
+      },
+      contacts: contactsForProject.map((contact) => ({
+        id: contact.id,
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
+        role: contact.role,
+        notes: contact.notes,
+      })),
+      skills: {
+        required: requiredSkills,
+        valuable: valuableSkills,
+      },
+      steps: stepsForProject,
+      notes: notesForProject,
+    } satisfies ProjectDetails;
+  });
+}
+
+interface CreateSkillInput {
+  name: string;
+}
+
+export async function findOrCreateSkill({ name }: CreateSkillInput) {
+  const trimmedName = name.trim();
+  if (!trimmedName) {
+    throw new Error("El nombre de la skill es obligatorio");
+  }
+
+  const existingSkill = await db.query.skills.findFirst({
+    where: eq(skills.name, trimmedName),
+  });
+
+  if (existingSkill) {
+    return existingSkill;
+  }
+
+  const [inserted] = await db.insert(skills).values({ name: trimmedName }).returning();
+  return inserted;
+}
+
+export async function linkSkillToProject({
+  projectId,
+  skillId,
+  kind,
+}: {
+  projectId: number;
+  skillId: number;
+  kind: "required" | "valuable";
+}) {
+  await db
+    .insert(projectSkills)
+    .values({ projectId, skillId, kind })
+    .onConflictDoNothing({
+      target: [projectSkills.projectId, projectSkills.skillId, projectSkills.kind],
+    });
+}
+
+export async function projectExists(projectId: number) {
+  const project = await db.query.projects.findFirst({
+    columns: { id: true },
+    where: eq(projects.id, projectId),
+  });
+
+  return Boolean(project);
+}
+
+export async function contactBelongsToCompany({
+  contactId,
+  companyId,
+}: {
+  contactId: number;
+  companyId: number;
+}) {
+  const contact = await db.query.contacts.findFirst({
+    columns: { id: true },
+    where: and(eq(contacts.id, contactId), eq(contacts.companyId, companyId)),
+  });
+
+  return Boolean(contact);
+}
