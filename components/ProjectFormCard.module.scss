@@ -1,0 +1,189 @@
+
+.card {
+  background: linear-gradient(145deg, #fef3c7, #facc15);
+  border-radius: 18px;
+  border: 2px dashed #b45309;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: #78350f;
+  width: min(100%, 1340px);
+  min-height: 640px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sections {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+  padding: 0.85rem;
+  border: 1px solid rgba(234, 179, 8, 0.4);
+}
+
+.sectionFull {
+  grid-column: 1 / -1;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.fieldGroup {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.inlineFields {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.input,
+.textarea,
+.select {
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  border-radius: 10px;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2937;
+}
+
+.textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.helperText {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #a16207;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fakeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.2rem;
+  border-radius: 999px;
+  border: 2px solid #d97706;
+  background: #f59e0b;
+  color: #fff7ed;
+  font-weight: 700;
+  cursor: not-allowed;
+  transition: transform 0.2s ease;
+}
+
+.fakeButton::after {
+  content: "(placeholder)";
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #fef3c7;
+}
+
+.fakeButton:active {
+  transform: scale(0.99);
+}
+
+.company {
+  grid-area: company;
+}
+
+.contact {
+  grid-area: contact;
+}
+
+.project {
+  grid-area: project;
+}
+
+.skills {
+  grid-area: skills;
+}
+
+.steps {
+  grid-area: steps;
+}
+
+.notes {
+  grid-area: notes;
+}
+
+@media (min-width: 1024px) {
+  .card {
+    width: min(100%, 1500px);
+    min-height: 620px;
+  }
+
+  .sections {
+    gap: 1rem 1.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "company contact"
+      "project contact"
+      "project skills"
+      "steps notes";
+  }
+
+  .section {
+    min-height: 0;
+  }
+
+  .sectionFull {
+    grid-column: auto;
+  }
+}
+
+@media (min-width: 1440px) {
+  .card {
+    width: min(100%, 1600px);
+    min-height: 600px;
+  }
+
+  .sections {
+    gap: 1.25rem 1.5rem;
+  }
+
+  .sections {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "company contact project"
+      "skills steps notes";
+  }
+
+  .sectionFull {
+    grid-column: auto;
+  }
+}

@@ -3,6 +3,7 @@
 import { useProjects } from "@/hooks/useProjects"
 
 import { ProjectCard } from "./ProjectCard"
+import { ProjectFormCard } from "./ProjectFormCard"
 import styles from "./ProjectOverview.module.scss"
 
 export function ProjectOverview() {
@@ -28,7 +29,10 @@ export function ProjectOverview() {
             ))}
           </div>
         ) : (
-          <StateMessage message="Añade tu primer proyecto para empezar a seguirlo." />
+          <div className={styles.emptyState}>
+            <StateMessage message="Empieza registrando la información clave de tu primer proyecto." />
+            <ProjectFormCard />
+          </div>
         )
       ) : null}
     </section>
