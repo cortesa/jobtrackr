@@ -71,27 +71,28 @@ export const projectContacts = sqliteTable(
   }),
 )
 
-export const skills = sqliteTable("skill", {
+export const techs = sqliteTable("tech", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull().unique(),
+  icon: text("icon"),
 })
 
-export const projectSkills = sqliteTable(
-  "project_skill",
+export const projectTechs = sqliteTable(
+  "project_tech",
   {
     projectId: integer("project_id")
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
-    skillId: integer("skill_id")
+    techId: integer("tech_id")
       .notNull()
-      .references(() => skills.id, { onDelete: "cascade" }),
+      .references(() => techs.id, { onDelete: "cascade" }),
     kind: text("kind").notNull(),
   },
   (table) => ({
-    pk: primaryKey({ columns: [ table.projectId, table.skillId, table.kind ] }),
+    pk: primaryKey({ columns: [ table.projectId, table.techId, table.kind ] }),
     kindCheck: check(
-      "project_skill_kind_check",
-      sql`${table.kind} in ('required', 'valuable')`,
+      "project_tech_kind_check",
+      sql`${table.kind} in ('required','valuable')`,
     ),
   }),
 )
@@ -138,7 +139,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
     references: [ companies.id ],
   }),
   projectContacts: many(projectContacts),
-  projectSkills: many(projectSkills),
+  projectTechs: many(projectTechs),
   steps: many(projectSteps),
   notes: many(projectNotes),
 }))
@@ -157,14 +158,18 @@ export const projectContactsRelations = relations(
   }),
 )
 
-export const projectSkillsRelations = relations(projectSkills, ({ one }) => ({
+export const techsRelations = relations(techs, ({ many }) => ({
+  projectLinks: many(projectTechs),
+}))
+
+export const projectTechsRelations = relations(projectTechs, ({ one }) => ({
   project: one(projects, {
-    fields: [ projectSkills.projectId ],
+    fields: [ projectTechs.projectId ],
     references: [ projects.id ],
   }),
-  skill: one(skills, {
-    fields: [ projectSkills.skillId ],
-    references: [ skills.id ],
+  tech: one(techs, {
+    fields: [ projectTechs.techId ],
+    references: [ techs.id ],
   }),
 }))
 
