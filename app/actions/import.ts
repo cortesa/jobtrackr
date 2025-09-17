@@ -11,11 +11,10 @@ import {
   db,
   projectContacts,
   projectNotes,
-  projectSkills,
   projectSteps,
   projects,
-  skills,
 } from "@/db"
+import { findOrCreateSkill, linkSkillToProject } from "@/db/queries"
 import { CSV_HEADERS } from "@/lib/csvTemplate"
 import { PROJECTS_TAG } from "./cache"
 import { failure, success, type ActionResult } from "./types"
@@ -84,6 +83,171 @@ function normalizeList(input: string | null | undefined): string[] {
     .map((item) => item.trim())
     .filter(Boolean)
 }
+function sanitizeRow(row: string[], headerLength: number): string[] | null {
+  const cells = row.map((value) => value.trim())
+  const requiredIndices = [ 0, 7, 8 ]
+
+  while (cells.length > headerLength) {
+    let removed = false
+
+    for (const requiredIndex of requiredIndices) {
+      if (requiredIndex < cells.length && cells[requiredIndex] === "" && cells[requiredIndex + 1]) {
+        cells.splice(requiredIndex, 1)
+        removed = true
+        break
+      }
+    }
+    if (removed) {
+      continue
+    }
+    const removeIndex = cells.lastIndexOf("")
+    if (removeIndex === -1) {
+      break
+    }
+    cells.splice(removeIndex, 1)
+  }
+  if (cells.length > headerLength) {
+    return null
+  }
+  while (cells.length < headerLength) {
+    cells.push("")
+  }
+
+  return cells
+}
+async function persistRows(normalizedRows: NormalizedRow[]) {
+  const companyCache = new Map<string, number>()
+  const contactCache = new Map<string, number>()
+  const skillCache = new Map<string, number>()
+
+  let imported = 0
+  let skipped = 0
+
+  for (const row of normalizedRows) {
+    const nameKey = row.companyName.toLowerCase()
+    let companyId = companyCache.get(nameKey)
+
+    if (!companyId) {
+      const existingCompany = await db.query.companies.findFirst({
+        where: (table, { eq }) => eq(table.name, row.companyName),
+      })
+
+      if (existingCompany) {
+        companyId = existingCompany.id
+      } else {
+        const [ insertedCompany ] = await db
+          .insert(companies)
+          .values({ name: row.companyName, website: row.companyWebsite })
+          .returning({ id: companies.id })
+        companyId = insertedCompany.id
+      }
+      companyCache.set(nameKey, companyId)
+    }
+    let contactId: number | null = null
+    if (row.contactName) {
+      const contactKey = (row.contactEmail || `${row.contactName}-${companyId}`).toLowerCase()
+      contactId = contactCache.get(contactKey) ?? null
+
+      if (!contactId) {
+        const existingContact = await db.query.contacts.findFirst({
+          where: (table, { and, eq }) =>
+            row.contactEmail
+              ? and(eq(table.companyId, companyId), eq(table.email, row.contactEmail))
+              : and(eq(table.companyId, companyId), eq(table.name, row.contactName!)),
+        })
+
+        if (existingContact) {
+          contactId = existingContact.id
+        } else {
+          const [ insertedContact ] = await db
+            .insert(contacts)
+            .values({
+              companyId,
+              name: row.contactName,
+              email: row.contactEmail,
+              phone: row.contactPhone,
+              role: row.contactRole,
+              notes: row.contactNotes,
+            })
+            .returning({ id: contacts.id })
+          contactId = insertedContact.id
+        }
+        contactCache.set(contactKey, contactId)
+      }
+    }
+    const now = Date.now()
+    const projectValues: typeof projects.$inferInsert = {
+      companyId,
+      name: row.projectName,
+      firstContactAt: row.firstContactAt,
+      salaryMin: row.salaryMin ?? undefined,
+      salaryMax: row.salaryMax ?? undefined,
+      salaryCurrency: row.salaryCurrency ?? undefined,
+      salaryPeriod: row.salaryPeriod ?? undefined,
+      salaryRaw: row.salaryRaw,
+      status: row.status ?? undefined,
+      createdAt: now,
+      updatedAt: now,
+    }
+
+    const existingProject = await db.query.projects.findFirst({
+      where: (table, { and, eq }) => and(eq(table.companyId, companyId), eq(table.name, row.projectName)),
+    })
+
+    if (existingProject) {
+      skipped += 1
+      continue
+    }
+    const [ insertedProject ] = await db
+      .insert(projects)
+      .values(projectValues)
+      .returning({ id: projects.id })
+
+    const projectId = insertedProject.id
+
+    if (contactId) {
+      await db
+        .insert(projectContacts)
+        .values({ projectId, contactId })
+        .onConflictDoNothing({
+          target: [ projectContacts.projectId, projectContacts.contactId ],
+        })
+    }
+    const handleSkill = async (skillName: string, kind: "required" | "valuable") => {
+      const key = skillName.toLowerCase()
+      let skillId = skillCache.get(key)
+      if (!skillId) {
+        const skill = await findOrCreateSkill({ name: skillName })
+        skillId = skill.id
+        skillCache.set(key, skillId)
+      }
+      await linkSkillToProject({ projectId, skillId, kind })
+    }
+    await Promise.all(row.skillsRequired.map((skill) => handleSkill(skill, "required")))
+    await Promise.all(row.skillsValuable.map((skill) => handleSkill(skill, "valuable")))
+
+    if (row.stepTitle && row.stepAt) {
+      await db.insert(projectSteps).values({
+        projectId,
+        title: row.stepTitle,
+        comment: row.stepComment,
+        stepAt: row.stepAt,
+        sortOrder: 0,
+        createdAt: now,
+      })
+    }
+    if (row.noteContent && row.noteAt) {
+      await db.insert(projectNotes).values({
+        projectId,
+        content: row.noteContent,
+        noteAt: row.noteAt,
+      })
+    }
+    imported += 1
+  }
+
+  return { imported, skipped }
+}
 async function processCsvContent(content: string): Promise<ActionResult<{ imported: number; skipped: number }>> {
   try {
     const rows = parse(content, {
@@ -107,39 +271,15 @@ async function processCsvContent(content: string): Promise<ActionResult<{ import
 
     dataRows.forEach((row, index) => {
       const line = index + 2
-      const cells = row.map((value) => value.trim())
-      const requiredIndices = [ 0, 7, 8 ]
-
-      while (cells.length > header.length) {
-        let removed = false
-
-        for (const requiredIndex of requiredIndices) {
-          if (requiredIndex < cells.length && cells[requiredIndex] === "" && cells[requiredIndex + 1]) {
-            cells.splice(requiredIndex, 1)
-            removed = true
-            break
-          }
-        }
-        if (removed) {
-          continue
-        }
-        const removeIndex = cells.lastIndexOf("")
-        if (removeIndex === -1) {
-          break
-        }
-        cells.splice(removeIndex, 1)
-      }
-      if (cells.length > header.length) {
+      const sanitized = sanitizeRow(row, header.length)
+      if (!sanitized) {
         errors.push(`Fila ${line}: contiene más columnas de las esperadas y no se pudo ajustar automáticamente.`)
 
         return
       }
-      while (cells.length < header.length) {
-        cells.push("")
-      }
       const record: Record<string, string> = {}
       header.forEach((column, columnIndex) => {
-        record[column] = cells[columnIndex] ?? ""
+        record[column] = sanitized[columnIndex] ?? ""
       })
 
       const companyName = record.company_name?.trim()
@@ -195,153 +335,7 @@ async function processCsvContent(content: string): Promise<ActionResult<{ import
     if (errors.length) {
       return failure(errors.slice(0, 10).join(" \n"))
     }
-    const companyCache = new Map<string, number>()
-    const contactCache = new Map<string, number>()
-    const skillCache = new Map<string, number>()
-
-    let imported = 0
-    let skipped = 0
-
-    await db.transaction(async (tx) => {
-      for (const row of normalizedRows) {
-        const nameKey = row.companyName.toLowerCase()
-        let companyId = companyCache.get(nameKey)
-        if (!companyId) {
-          const existingCompany = await tx.query.companies.findFirst({
-            where: (table, { eq }) => eq(table.name, row.companyName),
-          })
-
-          if (existingCompany) {
-            companyId = existingCompany.id
-            companyCache.set(nameKey, companyId)
-          } else {
-            const [ insertedCompany ] = await tx
-              .insert(companies)
-              .values({ name: row.companyName, website: row.companyWebsite })
-              .returning({ id: companies.id })
-            companyId = insertedCompany.id
-            companyCache.set(nameKey, companyId)
-          }
-        }
-        let contactId: number | null = null
-        if (row.contactName) {
-          const contactKey = (row.contactEmail || `${row.contactName}-${companyId}`).toLowerCase()
-          contactId = contactCache.get(contactKey) ?? null
-
-          if (!contactId) {
-            const existingContact = await tx.query.contacts.findFirst({
-              where: (table, { and, eq }) =>
-                row.contactEmail
-                  ? and(eq(table.companyId, companyId!), eq(table.email, row.contactEmail))
-                  : and(eq(table.companyId, companyId!), eq(table.name, row.contactName!)),
-            })
-
-            if (existingContact) {
-              contactId = existingContact.id
-            } else {
-              const [ insertedContact ] = await tx
-                .insert(contacts)
-                .values({
-                  companyId,
-                  name: row.contactName,
-                  email: row.contactEmail,
-                  phone: row.contactPhone,
-                  role: row.contactRole,
-                  notes: row.contactNotes,
-                })
-                .returning({ id: contacts.id })
-              contactId = insertedContact.id
-            }
-            contactCache.set(contactKey, contactId)
-          }
-        }
-        const now = Date.now()
-        const projectValues: typeof projects.$inferInsert = {
-          companyId,
-          name: row.projectName,
-          firstContactAt: row.firstContactAt,
-          salaryMin: row.salaryMin ?? undefined,
-          salaryMax: row.salaryMax ?? undefined,
-          salaryCurrency: row.salaryCurrency ?? undefined,
-          salaryPeriod: row.salaryPeriod ?? undefined,
-          salaryRaw: row.salaryRaw,
-          status: row.status ?? undefined,
-          createdAt: now,
-          updatedAt: now,
-        }
-
-        const existingProject = await tx.query.projects.findFirst({
-          where: (table, { and, eq }) =>
-            and(eq(table.companyId, companyId), eq(table.name, row.projectName)),
-        })
-
-        if (existingProject) {
-          skipped += 1
-          continue
-        }
-        const [ insertedProject ] = await tx
-          .insert(projects)
-          .values(projectValues)
-          .returning({ id: projects.id })
-
-        const projectId = insertedProject.id
-
-        if (contactId) {
-          await tx
-            .insert(projectContacts)
-            .values({ projectId, contactId })
-            .onConflictDoNothing({
-              target: [ projectContacts.projectId, projectContacts.contactId ],
-            })
-        }
-        const handleSkill = async (skillName: string, kind: "required" | "valuable") => {
-          const key = skillName.toLowerCase()
-          let skillId = skillCache.get(key)
-          if (!skillId) {
-            const existingSkill = await tx.query.skills.findFirst({
-              where: (table, { eq }) => eq(table.name, skillName),
-            })
-            if (existingSkill) {
-              skillId = existingSkill.id
-            } else {
-              const [ insertedSkill ] = await tx
-                .insert(skills)
-                .values({ name: skillName })
-                .returning({ id: skills.id })
-              skillId = insertedSkill.id
-            }
-            skillCache.set(key, skillId)
-          }
-          await tx
-            .insert(projectSkills)
-            .values({ projectId, skillId, kind })
-            .onConflictDoNothing({
-              target: [ projectSkills.projectId, projectSkills.skillId, projectSkills.kind ],
-            })
-        }
-        await Promise.all(row.skillsRequired.map((skill) => handleSkill(skill, "required")))
-        await Promise.all(row.skillsValuable.map((skill) => handleSkill(skill, "valuable")))
-
-        if (row.stepTitle && row.stepAt) {
-          await tx.insert(projectSteps).values({
-            projectId,
-            title: row.stepTitle,
-            comment: row.stepComment,
-            stepAt: row.stepAt,
-            sortOrder: 0,
-            createdAt: now,
-          })
-        }
-        if (row.noteContent && row.noteAt) {
-          await tx.insert(projectNotes).values({
-            projectId,
-            content: row.noteContent,
-            noteAt: row.noteAt,
-          })
-        }
-        imported += 1
-      }
-    })
+    const { imported, skipped } = await persistRows(normalizedRows)
 
     revalidateTag(PROJECTS_TAG)
 
