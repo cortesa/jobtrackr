@@ -92,15 +92,15 @@ export const csvColumns: CsvColumnDefinition[] = [
     example: "open | hold | won | lost",
   },
   {
-    key: "skills_required",
+    key: "techs_required",
     required: false,
-    description: "Lista de skills imprescindibles separadas por comas",
+    description: "Lista de tecnologías imprescindibles separadas por comas",
     example: "React, TypeScript, GraphQL",
   },
   {
-    key: "skills_valuable",
+    key: "techs_valuable",
     required: false,
-    description: "Lista de skills valorables separadas por comas",
+    description: "Lista de tecnologías valorables separadas por comas",
     example: "Storybook, Cypress",
   },
   {
@@ -157,7 +157,7 @@ export function buildCsvAiPrompt(): string {
     `- Los campos opcionales se rellenan si hay información disponible:\n${optionalList}\n\n` +
     `Formato adicional:\n` +
     `- Usa coma como separador. No añadas columnas ni cabeceras extra.\n` +
-    `- Las listas (skills) se separan por comas y no pueden repetir valores.\n` +
+    `- Las listas (techs_required y techs_valuable) se separan por comas y no pueden repetir valores.\n` +
     `- Las fechas pueden ir en formato ISO (YYYY-MM-DD) o como timestamp epoch en ms.\n` +
     `- Deja la celda vacía si no conoces un dato (sin “N/A”).\n` +
     `- No repitas el mismo project_name para una company_name; cada fila debe ser única.\n` +

@@ -4,6 +4,7 @@ import Link from "next/link"
 
 import type { ProjectDetails } from "@/db/queries"
 import { formatCurrencyRange, formatDate } from "@/lib/formatters"
+import { Icons, type IconName } from "@/lib/icons"
 
 import styles from "./ProjectCard.module.scss"
 
@@ -53,36 +54,46 @@ export function ProjectCard({ project }: ProjectCardProps) {
         )}
       </section>
 
-      <section className={styles.skills} aria-label="Tecnologías">
+      <section className={styles.techs} aria-label="Tecnologías">
         <span className={styles.sectionTitle}>Stack</span>
-        <div className={styles.skillGroup}>
+        <div className={styles.techGroup}>
           <span>Imprescindibles</span>
-          <div className={styles.skillPillGroup}>
-            {project.skills.required.length ? (
-              project.skills.required.map((skill) => (
-                <span key={`required-${skill}`} className={styles.skillPill}>
-                  {skill}
-                </span>
-              ))
+          <div className={styles.techPillGroup}>
+            {project.techs.required.length ? (
+              project.techs.required.map((tech) => {
+                const IconComponent = tech.icon ? Icons[tech.icon as IconName] : null
+
+                return (
+                  <span key={`required-${project.id}-${tech.name}`} className={styles.techPill}>
+                    {IconComponent ? <IconComponent size={14} /> : null}
+                    {tech.name}
+                  </span>
+                )
+              })
             ) : (
-              <span className={styles.empty}>Sin skills imprescindibles.</span>
+              <span className={styles.empty}>Sin techs imprescindibles.</span>
             )}
           </div>
         </div>
-        <div className={styles.skillGroup}>
+        <div className={styles.techGroup}>
           <span>Valorables</span>
-          <div className={styles.skillPillGroup}>
-            {project.skills.valuable.length ? (
-              project.skills.valuable.map((skill) => (
-                <span
-                  key={`valuable-${skill}`}
-                  className={`${styles.skillPill} ${styles.skillPillValuable}`}
-                >
-                  {skill}
-                </span>
-              ))
+          <div className={styles.techPillGroup}>
+            {project.techs.valuable.length ? (
+              project.techs.valuable.map((tech) => {
+                const IconComponent = tech.icon ? Icons[tech.icon as IconName] : null
+
+                return (
+                  <span
+                    key={`valuable-${project.id}-${tech.name}`}
+                    className={`${styles.techPill} ${styles.techPillValuable}`}
+                  >
+                    {IconComponent ? <IconComponent size={14} /> : null}
+                    {tech.name}
+                  </span>
+                )
+              })
             ) : (
-              <span className={styles.empty}>Sin skills valorables.</span>
+              <span className={styles.empty}>Sin techs valorables.</span>
             )}
           </div>
         </div>

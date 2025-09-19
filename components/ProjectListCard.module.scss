@@ -1,14 +1,26 @@
+@use '@/globalCss/utils.scss' as utils;
+
 .card {
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  position: relative;
+  color: rgba(148, 163, 184, 0.3);
+  border: 2px solid currentColor;
   border-radius: 16px;
   padding: 1.2rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background: #ffffff;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
   text-decoration: none;
-  color: inherit;
+  overflow: hidden;
+
+  &:before {
+    content: "";
+    position: absolute;
+    inset: 0px;
+    background: currentColor;
+    opacity: 0.2;
+
+  }
 }
 
 .card:hover {
@@ -17,9 +29,10 @@
 }
 
 .company {
-  font-size: 0.95rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  color: #475467;
+  color: currentcolor;
+  color: color-mix(in srgb, currentColor 80%, black 50%);
 }
 
 .project {

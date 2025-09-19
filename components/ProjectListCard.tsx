@@ -20,7 +20,12 @@ export function ProjectListCard({ project }: ProjectListCardProps) {
   })
 
   return (
-    <Link href={`/projects/${project.id}`} className={styles.card}>
+    <Link
+      href={`/projects/${project.id}`}
+      className={styles.card}
+      style={{
+        color: project.company.color || undefined,
+      }}>
       <span className={styles.company}>{project.company.name}</span>
       <span className={styles.project}>{project.name}</span>
       {salaryRange ? <span className={styles.salary}>{salaryRange}</span> : null}

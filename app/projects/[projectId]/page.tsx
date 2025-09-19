@@ -3,6 +3,7 @@ import Link from "next/link"
 
 import { getProjectDetailsById } from "@/db/queries"
 import { formatCurrencyRange, formatDate } from "@/lib/formatters"
+import { Icons, type IconName } from "@/lib/icons"
 
 import styles from "./page.module.scss"
 
@@ -101,9 +102,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             <h3>Imprescindibles</h3>
             {project.techs.required.length ? (
               <ul className={styles.pills}>
-                {project.techs.required.map((tech) => (
-                  <li key={`required-${tech}`}>{tech}</li>
-                ))}
+                {project.techs.required.map((tech) => {
+                  const IconComponent = tech.icon ? Icons[tech.icon as IconName] : null
+
+                  return (
+                    <li key={`required-${tech.name}`}>
+                      {IconComponent ? <IconComponent size={16} /> : null}
+                      {tech.name}
+                    </li>
+                  )
+                })}
               </ul>
             ) : (
               <p className={styles.empty}>Sin techs imprescindibles.</p>
@@ -113,9 +121,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             <h3>Valorables</h3>
             {project.techs.valuable.length ? (
               <ul className={styles.pills}>
-                {project.techs.valuable.map((tech) => (
-                  <li key={`valuable-${tech}`}>{tech}</li>
-                ))}
+                {project.techs.valuable.map((tech) => {
+                  const IconComponent = tech.icon ? Icons[tech.icon as IconName] : null
+
+                  return (
+                    <li key={`valuable-${tech.name}`}>
+                      {IconComponent ? <IconComponent size={16} /> : null}
+                      {tech.name}
+                    </li>
+                  )
+                })}
               </ul>
             ) : (
               <p className={styles.empty}>Sin techs valorables.</p>

@@ -1,0 +1,43 @@
+@use "./reset.scss";
+@use "./theme.scss" as *;
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+
+body {
+  font-family: Poppins;
+  color: $text-primary;
+  background-color: $background;
+  overflow: auto;
+}
+
+html, body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+h1 {
+  font-size: $h1-size;
+  font-weight: $bold;
+}
+
+h2 {
+  font-size: $h2-size;
+  font-weight: $bold;
+}
+
+h3 {
+  font-size: $h3-size;
+  font-weight: $bold;
+}
+
+.pageTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  gap: 20px;
+}

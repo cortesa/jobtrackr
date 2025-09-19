@@ -23,8 +23,8 @@ interface FormState {
   salaryCurrency: string
   salaryPeriod: string
   salaryRaw: string
-  skillsRequired: string
-  skillsValuable: string
+  techsRequired: string
+  techsValuable: string
   stepTitle: string
   stepAt: string
   stepComment: string
@@ -48,8 +48,8 @@ const INITIAL_STATE: FormState = {
   salaryCurrency: "EUR",
   salaryPeriod: "year",
   salaryRaw: "",
-  skillsRequired: "",
-  skillsValuable: "",
+  techsRequired: "",
+  techsValuable: "",
   stepTitle: "",
   stepAt: "",
   stepComment: "",
@@ -76,10 +76,10 @@ function parseNumberInput(value: string): number | null {
 
   return numberValue
 }
-function parseSkills(value: string): string[] {
+function parsetechs(value: string): string[] {
   return value
     .split(",")
-    .map((skill) => skill.trim())
+    .map((tech) => tech.trim())
     .filter(Boolean)
 }
 export function ProjectFormCard() {
@@ -125,8 +125,8 @@ export function ProjectFormCard() {
       salaryPeriod: form.salaryPeriod.trim() || undefined,
       salaryRaw: form.salaryRaw.trim() || undefined,
       status: form.status.trim() || undefined,
-      skillsRequired: parseSkills(form.skillsRequired),
-      skillsValuable: parseSkills(form.skillsValuable),
+      techsRequired: parsetechs(form.techsRequired),
+      techsValuable: parsetechs(form.techsValuable),
       step:
         form.stepTitle.trim() && parseDateInput(form.stepAt) !== null
           ? {
@@ -356,8 +356,8 @@ export function ProjectFormCard() {
           </label>
         </section>
 
-        <section className={`${styles.section} ${styles.skills}`} aria-labelledby="project-form-skills">
-          <h3 id="project-form-skills" className={styles.sectionTitle}>
+        <section className={`${styles.section} ${styles.techs}`} aria-labelledby="project-form-techs">
+          <h3 id="project-form-techs" className={styles.sectionTitle}>
             Stack requerido
           </h3>
           <div className={styles.inlineFields}>
@@ -366,10 +366,10 @@ export function ProjectFormCard() {
               <input
                 className={styles.input}
                 type="text"
-                name="skillsRequired"
+                name="techsRequired"
                 placeholder="React, TypeScript, Tailwind"
-                value={form.skillsRequired}
-                onChange={handleChange("skillsRequired")}
+                value={form.techsRequired}
+                onChange={handleChange("techsRequired")}
               />
             </label>
             <label className={styles.label}>
@@ -377,10 +377,10 @@ export function ProjectFormCard() {
               <input
                 className={styles.input}
                 type="text"
-                name="skillsValuable"
+                name="techsValuable"
                 placeholder="Storybook, Testing Library"
-                value={form.skillsValuable}
-                onChange={handleChange("skillsValuable")}
+                value={form.techsValuable}
+                onChange={handleChange("techsValuable")}
               />
             </label>
           </div>

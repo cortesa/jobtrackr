@@ -44,7 +44,7 @@
 }
 
 .contacts,
-.skills,
+.techs,
 .steps,
 .notes {
   display: flex;
@@ -61,19 +61,19 @@
   background: #f1f5f9;
 }
 
-.skillGroup {
+.techGroup {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
 
-.skillPillGroup {
+.techPillGroup {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.skillPill {
+.techPill {
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
   font-size: 0.85rem;
@@ -82,7 +82,7 @@
   color: #1d4ed8;
 }
 
-.skillPillValuable {
+.techPillValuable {
   background: #fce7f3;
   color: #be185d;
 }

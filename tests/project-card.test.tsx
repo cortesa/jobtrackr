@@ -32,9 +32,12 @@ const sampleProject: ProjectDetails = {
       notes: "Respuesta rápida",
     },
   ],
-  skills: {
-    required: [ "React", "TypeScript" ],
-    valuable: [ "Storybook" ],
+  techs: {
+    required: [
+      { name: "React", icon: null },
+      { name: "TypeScript", icon: null },
+    ],
+    valuable: [ { name: "Storybook", icon: null } ],
   },
   steps: [
     {

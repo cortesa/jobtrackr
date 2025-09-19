@@ -8,10 +8,15 @@ import { CsvImportButton } from "./CsvImportButton"
 import { ProjectListCard } from "./ProjectListCard"
 import { ProjectFormCard } from "./ProjectFormCard"
 import styles from "./ProjectsOverview.module.scss"
+import { useCompanies } from "@/hooks/useCompanies"
 
 export function ProjectsOverview() {
   const { data, isLoading, isError, error } = useProjects()
   const [ showForm, setShowForm ] = useState(false)
+
+  const { data: apolloData } = useCompanies()
+
+  console.log("acz: comapnies apolloData", apolloData)
 
   return (
     <section className={styles.container}>

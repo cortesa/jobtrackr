@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useTransition, type ChangeEvent } from "react"
+import { useEffect, useRef, useState, useTransition, type ChangeEvent } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 
 import { importProjectsFromCsv, importProjectsFromCsvText } from "@/app/actions/import"
@@ -18,12 +18,45 @@ export function CsvImportButton() {
   const [ feedback, setFeedback ] = useState<FeedbackState | null>(null)
   const [ isPending, startTransition ] = useTransition()
   const [ isCopyingPrompt, setIsCopyingPrompt ] = useState(false)
+  const [ isMenuOpen, setIsMenuOpen ] = useState(false)
   const [ isManualOpen, setIsManualOpen ] = useState(false)
   const [ manualCsv, setManualCsv ] = useState("")
   const [ isManualImporting, setIsManualImporting ] = useState(false)
+  const menuRef = useRef<HTMLDivElement | null>(null)
+  const manualDialogRef = useRef<HTMLDialogElement | null>(null)
 
+  const closeMenu = () => setIsMenuOpen(false)
+  const openManualDialog = () => {
+    setFeedback(null)
+    closeMenu()
+    const dialog = manualDialogRef.current
+    if (!dialog) return
+
+    if (!dialog.open) {
+      if (typeof dialog.showModal === "function") {
+        dialog.showModal()
+      } else {
+        dialog.setAttribute("open", "")
+      }
+      setIsManualOpen(true)
+    }
+  }
+  const closeManualDialog = () => {
+    const dialog = manualDialogRef.current
+    if (!dialog) return
+
+    if (dialog.open) {
+      if (typeof dialog.close === "function") {
+        dialog.close()
+      } else {
+        dialog.removeAttribute("open")
+      }
+    }
+    setIsManualOpen(false)
+  }
   const handleClick = () => {
     setFeedback(null)
+    closeMenu()
     inputRef.current?.click()
   }
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -51,6 +84,7 @@ export function CsvImportButton() {
   }
   const handleCopyPrompt = async () => {
     setFeedback(null)
+    closeMenu()
     setIsCopyingPrompt(true)
     try {
       const response = await fetch("/api/csv-template/prompt")
@@ -74,7 +108,11 @@ export function CsvImportButton() {
     }
   }
   const handleToggleManual = () => {
-    setIsManualOpen((previous) => !previous)
+    if (isManualOpen) {
+      closeManualDialog()
+    } else {
+      openManualDialog()
+    }
   }
   const handleManualImport = async () => {
     setFeedback(null)
@@ -93,6 +131,7 @@ export function CsvImportButton() {
         })
         await queryClient.invalidateQueries({ queryKey: [ "projects" ] })
         setManualCsv("")
+        closeManualDialog()
       } else {
         setFeedback({ type: "error", message: result.error })
       }
@@ -103,32 +142,100 @@ export function CsvImportButton() {
       setIsManualImporting(false)
     }
   }
+  const handleToggleMenu = () => {
+    setIsMenuOpen((previous) => !previous)
+  }
+  useEffect(() => {
+    if (!isMenuOpen) return
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false)
+      }
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [ isMenuOpen ])
+
+  useEffect(() => {
+    const dialog = manualDialogRef.current
+    if (!dialog) {
+      return
+    }
+    const handleClose = () => {
+      setIsManualOpen(false)
+    }
+    dialog.addEventListener("close", handleClose)
+
+    return () => {
+      dialog.removeEventListener("close", handleClose)
+    }
+  }, [])
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.actions}>
+      <div className={styles.menuWrapper} ref={menuRef}>
         <button
           type="button"
-          className={styles.button}
-          onClick={handleClick}
-          disabled={isPending}
+          className={styles.menuToggle}
+          aria-haspopup="menu"
+          aria-expanded={isMenuOpen}
+          aria-controls="csv-import-menu"
+          onClick={handleToggleMenu}
         >
-          {isPending ? "Importando…" : "Importar CSV"}
+          <span aria-hidden className={styles.menuIcon}>
+            <span />
+          </span>
+          Acciones CSV
         </button>
-        <a className={styles.secondaryButton} href="/api/csv-template" download>
-          Descargar plantilla
-        </a>
-        <button
-          type="button"
-          className={styles.ghostButton}
-          onClick={handleCopyPrompt}
-          disabled={isCopyingPrompt}
-        >
-          {isCopyingPrompt ? "Copiando…" : "Copiar prompt IA"}
-        </button>
-        <button type="button" className={styles.ghostButton} onClick={handleToggleManual}>
-          {isManualOpen ? "Ocultar área de pegado" : "Pegar CSV manualmente"}
-        </button>
+        {isMenuOpen ? (
+          <div className={styles.menuList} id="csv-import-menu" role="menu">
+            <button
+              type="button"
+              className={`${styles.button} ${styles.menuAction}`}
+              onClick={handleClick}
+              disabled={isPending}
+              role="menuitem"
+            >
+              {isPending ? "Importando…" : "Importar CSV"}
+            </button>
+            <a
+              className={`${styles.secondaryButton} ${styles.menuAction}`}
+              href="/api/csv-template"
+              download
+              role="menuitem"
+            >
+              Descargar plantilla
+            </a>
+            <button
+              type="button"
+              className={`${styles.ghostButton} ${styles.menuAction}`}
+              onClick={handleCopyPrompt}
+              disabled={isCopyingPrompt}
+              role="menuitem"
+            >
+              {isCopyingPrompt ? "Copiando…" : "Copiar prompt IA"}
+            </button>
+            <button
+              type="button"
+              className={`${styles.ghostButton} ${styles.menuAction}`}
+              onClick={handleToggleManual}
+              role="menuitem"
+            >
+              {isManualOpen ? "Cerrar modal" : "Pegar CSV manualmente"}
+            </button>
+          </div>
+        ) : null}
       </div>
       <input
         ref={inputRef}
@@ -137,8 +244,22 @@ export function CsvImportButton() {
         onChange={handleFileChange}
         hidden
       />
-      {isManualOpen ? (
+      <dialog
+        ref={manualDialogRef}
+        className={styles.manualDialog}
+        aria-labelledby="manual-import-title"
+      >
         <div className={styles.manualContainer}>
+          <header className={styles.manualHeader}>
+            <h2 id="manual-import-title">Pegar CSV manualmente</h2>
+            <button
+              type="button"
+              className={styles.closeButton}
+              onClick={closeManualDialog}
+            >
+              Cerrar
+            </button>
+          </header>
           <label htmlFor="manual-csv-textarea">
             Pega aquí el contenido CSV (incluye la fila de cabeceras)
           </label>
@@ -167,7 +288,7 @@ export function CsvImportButton() {
             </button>
           </div>
         </div>
-      ) : null}
+      </dialog>
       {feedback ? (
         <p
           className={`${styles.feedback} ${

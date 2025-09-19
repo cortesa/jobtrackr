@@ -152,8 +152,8 @@
   grid-area: project;
 }
 
-.skills {
-  grid-area: skills;
+.techs {
+  grid-area: techs;
 }
 
 .steps {
@@ -176,7 +176,7 @@
     grid-template-areas:
       "company contact"
       "project contact"
-      "project skills"
+      "project techs"
       "steps notes";
   }
 
@@ -203,7 +203,7 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-areas:
       "company contact project"
-      "skills steps notes";
+      "techs steps notes";
   }
 
   .sectionFull {
