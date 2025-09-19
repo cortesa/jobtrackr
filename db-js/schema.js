@@ -10,6 +10,16 @@ import {
 
 const timestampNow = sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`
 
+export const companies = sqliteTable("company", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  website: text("website"),
+  color: text("color"),
+  createdAt: text("createdAt")
+    .notNull()
+    .default(timestampNow),
+})
+
 export const contacts = sqliteTable("contact", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   companyId: integer("company_id")
